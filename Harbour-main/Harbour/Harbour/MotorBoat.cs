@@ -39,50 +39,49 @@ namespace Harbour
             boats.Add(new MotorBoat(id, weight, maxSpeed, daysStaying, daysSinceArrival, power));
         }
 
-        public static (int, bool) FindMotorBoatSpace(HarbourSpace[] harbour)
+        internal static bool ParkMotorBoatInHarbour(Boat boat, HarbourSpace[] dock1, HarbourSpace[] dock2)
         {
-            int selectedSpace = 0;
-            bool spaceFound = false;
+            bool boatParked;
 
-            // Om index 0 är ledigt och index 1 upptaget
-            if (harbour[0].ParkedBoats.Count == 0 && harbour[1].ParkedBoats.Count > 0)
+            while (true)
             {
-                selectedSpace = 0;
-                spaceFound = true;
-            }
+                int selectedSpace;
 
-            // Annars, hitta ensam plats med upptagna platser runtom
-            if (spaceFound == false)
-            {
-                var q1 = harbour
-                    .FirstOrDefault(h => h.ParkedBoats.Count == 0
-                    && h.SpaceId > 0
-                    && h.SpaceId < harbour.Length - 2
-                    && harbour[h.SpaceId - 1].ParkedBoats.Count > 0
-                    && harbour[h.SpaceId + 1].ParkedBoats.Count > 0);
-
-                if (q1 != null)
+                (selectedSpace, boatParked) = RowingBoat.FindSingleSpaceBetweenOccupiedSpaces(dock1);
+                if (boatParked)
                 {
-                    selectedSpace = q1.SpaceId;
-                    spaceFound = true;
+                    dock1[selectedSpace].ParkedBoats.Add(boat);
+                    break;
                 }
-            }
 
-            // Annars, hitta första lediga plats
-            if (spaceFound == false)
-            {
-                var q2 = harbour
-                   .FirstOrDefault(h => h.ParkedBoats.Count == 0);
-
-                if (q2 != null)
+                (selectedSpace, boatParked) = RowingBoat.FindSingleSpaceBetweenOccupiedSpaces(dock2);
+                if (boatParked)
                 {
-                    selectedSpace = q2.SpaceId;
-                    spaceFound = true;
+                    dock2[selectedSpace].ParkedBoats.Add(boat);
+                    break;
                 }
+
+                (selectedSpace, boatParked) = RowingBoat.FindFirstFreeSpace(dock1);
+                if (boatParked)
+                {
+                    dock1[selectedSpace].ParkedBoats.Add(boat);
+                    break;
+                }
+
+                (selectedSpace, boatParked) = RowingBoat.FindFirstFreeSpace(dock2);
+                if (boatParked)
+                {
+                    dock2[selectedSpace].ParkedBoats.Add(boat);
+                    break;
+                }
+
+                break;
             }
 
-            return (selectedSpace, spaceFound);
+            return boatParked;
         }
+
+       
     }
 
 

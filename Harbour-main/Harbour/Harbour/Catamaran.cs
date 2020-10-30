@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Harbour
 {
@@ -39,16 +38,66 @@ namespace Harbour
             boats.Add(new Catamaran(id, weight, maxSpeed, daysStaying, daysSinceArrival, beds));
         }
 
-        public static (int, bool) FindCatamaranSpace(HarbourSpace[] harbour)
+        internal static bool ParkCatamaranInHarbour(Boat boat, HarbourSpace[] dock1, HarbourSpace[] dock2)
+        {
+            bool boatParked;
+
+            while (true)
+            {
+                int selectedSpace;
+
+                (selectedSpace, boatParked) = FindTripleSpaceBetweenOccupiedSpaces(dock1);
+                if (boatParked)
+                {
+                    dock1[selectedSpace].ParkedBoats.Add(boat);
+                    dock1[selectedSpace + 1].ParkedBoats.Add(boat);
+                    dock1[selectedSpace + 2].ParkedBoats.Add(boat);
+                    break;
+                }
+
+                (selectedSpace, boatParked) = FindTripleSpaceBetweenOccupiedSpaces(dock2);
+                if (boatParked)
+                {
+                    dock2[selectedSpace].ParkedBoats.Add(boat);
+                    dock2[selectedSpace + 1].ParkedBoats.Add(boat);
+                    dock2[selectedSpace + 2].ParkedBoats.Add(boat);
+                    break;
+                }
+
+                (selectedSpace, boatParked) = FindFirstThreeFreeSpaces(dock1);
+                if (boatParked)
+                {
+                    dock1[selectedSpace].ParkedBoats.Add(boat);
+                    dock1[selectedSpace + 1].ParkedBoats.Add(boat);
+                    dock1[selectedSpace + 2].ParkedBoats.Add(boat);
+                    break;
+                }
+
+                (selectedSpace, boatParked) = FindFirstThreeFreeSpaces(dock2);
+                if (boatParked)
+                {
+                    dock2[selectedSpace].ParkedBoats.Add(boat);
+                    dock2[selectedSpace + 1].ParkedBoats.Add(boat);
+                    dock2[selectedSpace + 2].ParkedBoats.Add(boat);
+                    break;
+                }
+
+                break;
+            }
+
+            return boatParked;
+        }
+
+        private static (int selectedSpace, bool spaceFound) FindTripleSpaceBetweenOccupiedSpaces(HarbourSpace[] dock)
         {
             int selectedSpace = 0;
             bool spaceFound = false;
 
             // Om index 0-2 är ledigt och index 3 upptaget
-            if (harbour[0].ParkedBoats.Count == 0
-                && harbour[1].ParkedBoats.Count == 0
-                && harbour[2].ParkedBoats.Count == 0
-                && harbour[3].ParkedBoats.Count > 0)
+            if (dock[0].ParkedBoats.Count == 0
+                && dock[1].ParkedBoats.Count == 0
+                && dock[2].ParkedBoats.Count == 0
+                && dock[3].ParkedBoats.Count > 0)
             {
                 selectedSpace = 0;
                 spaceFound = true;
@@ -57,36 +106,53 @@ namespace Harbour
             //Annars, hitta tre lediga platser intill varandra med upptagna platser runtom
             if (spaceFound == false)
             {
-                var q1 = harbour
+                var q = dock
                     .FirstOrDefault(h => h.ParkedBoats.Count == 0
                     && h.SpaceId > 0
-                    && h.SpaceId < harbour.Length - 3
-                    && harbour[h.SpaceId + 1].ParkedBoats.Count == 0
-                    && harbour[h.SpaceId + 2].ParkedBoats.Count == 0
-                    && harbour[h.SpaceId - 1].ParkedBoats.Count > 0
-                    && harbour[h.SpaceId + 3].ParkedBoats.Count > 0);
+                    && h.SpaceId < dock.Length - 3
+                    && dock[h.SpaceId + 1].ParkedBoats.Count == 0
+                    && dock[h.SpaceId + 2].ParkedBoats.Count == 0
+                    && dock[h.SpaceId - 1].ParkedBoats.Count > 0
+                    && dock[h.SpaceId + 3].ParkedBoats.Count > 0);
 
-                if (q1 != null)
+                if (q != null)
                 {
-                    selectedSpace = q1.SpaceId;
+                    selectedSpace = q.SpaceId;
                     spaceFound = true;
                 }
             }
 
-            // Annars, hitta första tre lediga intill varandra
+            // Annars, om tre sista index är ledigt och index innan upptaget
             if (spaceFound == false)
             {
-                var q2 = harbour
-                   .FirstOrDefault(h => h.ParkedBoats.Count == 0
-                   && h.SpaceId < harbour.Length - 2
-                   && harbour[h.SpaceId + 1].ParkedBoats.Count == 0
-                   && harbour[h.SpaceId + 2].ParkedBoats.Count == 0);
-
-                if (q2 != null)
+                if (dock[dock.Length - 3].ParkedBoats.Count == 0
+                    && dock[dock.Length - 2].ParkedBoats.Count == 0
+                    && dock[dock.Length - 1].ParkedBoats.Count == 0
+                    && dock[dock.Length - 4].ParkedBoats.Count > 0)
                 {
-                    selectedSpace = q2.SpaceId;
+                    selectedSpace = dock.Length - 3;
                     spaceFound = true;
                 }
+            }
+
+            return (selectedSpace, spaceFound);
+        }
+
+        private static (int selectedSpace, bool spaceFound) FindFirstThreeFreeSpaces(HarbourSpace[] dock)
+        {
+            int selectedSpace = 0;
+            bool spaceFound = false;
+
+            var q = dock
+                   .FirstOrDefault(h => h.ParkedBoats.Count == 0
+                   && h.SpaceId < dock.Length - 2
+                   && dock[h.SpaceId + 1].ParkedBoats.Count == 0
+                   && dock[h.SpaceId + 2].ParkedBoats.Count == 0);
+
+            if (q != null)
+            {
+                selectedSpace = q.SpaceId;
+                spaceFound = true;
             }
 
             return (selectedSpace, spaceFound);
