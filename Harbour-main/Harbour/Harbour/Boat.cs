@@ -34,9 +34,9 @@ namespace Harbour
             return id;
         }
 
-        public virtual string TextToFile(int index)
+        public virtual string TextToFile(int spaceId)
         {
-            return $"{index};{IdNumber};{Weight};{MaximumSpeed};{Type};{DaysStaying};{DaysSinceArrival};";
+            return $"{spaceId};{IdNumber};{Weight};{MaximumSpeed};{Type};{DaysStaying};{DaysSinceArrival};";
         }
     }
 }

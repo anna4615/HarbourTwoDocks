@@ -14,7 +14,7 @@ namespace Harbour
 
             Console.WriteLine(Utils.PrintTextFromFile(fileText));
 
-            HarbourSpace[] dock1 = new HarbourSpace[15];
+            HarbourSpace[] dock1 = new HarbourSpace[32];
             for (int i = 0; i < dock1.Length; i++)
             {
                 dock1[i] = new HarbourSpace(i);
@@ -23,7 +23,7 @@ namespace Harbour
 
             fileText = File.ReadLines("BoatsInDock2.txt", System.Text.Encoding.UTF7);
 
-            HarbourSpace[] dock2 = new HarbourSpace[10];
+            HarbourSpace[] dock2 = new HarbourSpace[32];
             for (int i = 0; i < dock2.Length; i++)
             {
                 dock2[i] = new HarbourSpace(i);
@@ -343,7 +343,7 @@ namespace Harbour
                 {
                     if (space.SpaceId > 0 && dock[space.SpaceId - 1].ParkedBoats.Contains(boat))
                     {
-                        text += $""; // Samma båt som på pos innan -> gör ingenting
+                        text += $""; // Samma båt som på space innan -> skriv ingenting
                     }
 
                     else
@@ -374,8 +374,8 @@ namespace Harbour
         private static void AddBoatsFromFileToHarbour(IEnumerable<string> fileText, HarbourSpace[] dock)
         {
             // File:
-            // index; Id; Weight; MaxSpeed; Type; DaysStaying; DaySinceArrival; Special
-            // 0      1   2       3         4     5            6                7
+            // spaceId;Id;Weight;MaxSpeed;Type;DaysStaying;DaySinceArrival;Special
+            // 0       1  2      3        4    5           6               7
 
             foreach (var line in fileText)
             {
@@ -400,7 +400,6 @@ namespace Harbour
 
                     case "Segelbåt":
                         index = int.Parse(boatData[0]);
-
                         if (dock[index].ParkedBoats.Count == 0) // När andra halvan av segelbåten kommmer från foreach är den redan tillagd på den platsen annars hade det blivit två kopior av samma båt
                         {
                             SailingBoat sailingBoat = new SailingBoat(boatData[1], int.Parse(boatData[2]), int.Parse(boatData[3]),
@@ -413,7 +412,6 @@ namespace Harbour
 
                     case "Katamaran":
                         index = int.Parse(boatData[0]);
-
                         if (dock[index].ParkedBoats.Count == 0) // När resten av lastfartyget kommmer från foreach är det redan tillagt, annars hade det blivit kopior
                         {
                             Catamaran catamaran = new Catamaran(boatData[1], int.Parse(boatData[2]), int.Parse(boatData[3]),
@@ -427,7 +425,6 @@ namespace Harbour
 
                     case "Lastfartyg":
                         index = int.Parse(boatData[0]);
-
                         if (dock[index].ParkedBoats.Count == 0) // När resten av lastfartyget kommmer från foreach är det redan tillagt, annars hade det blivit kopior
                         {
                             CargoShip cargoship = new CargoShip(boatData[1], int.Parse(boatData[2]), int.Parse(boatData[3]),
@@ -461,7 +458,6 @@ namespace Harbour
                         }
                     }
                 }
-
                 //index++;
             }
 
